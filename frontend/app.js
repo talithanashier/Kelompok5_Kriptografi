@@ -44,22 +44,40 @@ function initShowcasePreviews() {
   $('railPreviewGrid').innerHTML = rHtml;
 }
 
-// Klik Kartu Showcase
+// Inisialisasi Tab Cepat & Kartu Showcase
+function syncActiveAlgoUI(algo) {
+  document.querySelectorAll('.tab-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === algo);
+  });
+  document.querySelectorAll('.show-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.algo === algo);
+  });
+}
+
+// Klik Tab Cepat di Atas Input
+document.querySelectorAll('.tab-pill').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    switchAlgorithm(btn.dataset.tab);
+  });
+});
+
+// Klik Kartu Showcase di Bawah
 document.querySelectorAll('.show-card').forEach((card) => {
   card.addEventListener('click', () => {
-    document.querySelectorAll('.show-card').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
     switchAlgorithm(card.dataset.algo);
   });
 });
 
-$('btnSuper').addEventListener('click', () => {
-  document.querySelectorAll('.show-card').forEach(c => c.classList.remove('active'));
-  switchAlgorithm('super');
-});
+if ($('btnSuper')) {
+  $('btnSuper').addEventListener('click', () => {
+    switchAlgorithm('super');
+  });
+}
 
 function switchAlgorithm(algo) {
   activeAlgo = algo;
+  syncActiveAlgoUI(algo);
+
   const cfg = {
     rail: { badge: '03 RAIL FENCE', title: 'Rail Fence Cipher Workspace', desc: 'Pratinjau input pada pola zig-zag rel kereta.' },
     columnar: { badge: '02 COLUMNAR', title: 'Columnar Transposition Workspace', desc: 'Pratinjau penulisan baris dan pembacaan per kolom.' },
@@ -75,8 +93,13 @@ function switchAlgorithm(algo) {
   $('grpCol').style.display = (algo === 'columnar' || algo === 'super') ? 'flex' : 'none';
   $('grpPf').style.display = (algo === 'playfair' || algo === 'super') ? 'flex' : 'none';
 
+  // Reset status card
+  $('valBox').className = 'val-box val-idle';
+  $('valIcon').innerHTML = `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+  $('valTitle').textContent = 'Siap Memproses';
+  $('valDesc').textContent = 'Pilih Enkripsi, Dekripsi, atau Uji Bolak-Balik di atas.';
+
   renderInteractiveVisualization();
-  $('workspaceArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Render Visualisasi Interaktif
@@ -119,10 +142,21 @@ function renderInteractiveVisualization() {
   }
 }
 
+let lastEncryptedCipher = '';
+let lastOriginalPlain = '';
+
+// Scroll Otomatis ke Bagian Output & Hasil Checking
+function scrollToOutput() {
+  const target = document.querySelector('.bottom-split-section') || $('outputText');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
 // Enkripsi
 $('btnEncrypt').addEventListener('click', () => {
   const text = $('inputText').value;
-  if (!text) return alert('Input teks masih kosong!');
+  if (!text.trim()) return alert('Input teks masih kosong!');
   const kR = parseInt($('keyRail').value, 10) || 1;
   const kC = parseInt($('keyCol').value, 10) || 1;
   const kP = $('keyPf').value.trim() || 'K';
@@ -134,27 +168,42 @@ $('btnEncrypt').addEventListener('click', () => {
     else if (activeAlgo === 'playfair') res = encryptPlayfair(res, kP);
     else if (activeAlgo === 'super') res = encryptRailFence(encryptColumnarTransposition(encryptPlayfair(res, kP), kC), kR);
 
-    animateText($('outputText'), res, () => $('valBox').style.display = 'none');
-  } catch (e) { alert('Error: ' + e.message); }
+    lastOriginalPlain = text;
+    lastEncryptedCipher = res;
+
+    scrollToOutput();
+
+    animateText($('outputText'), res, () => {
+      $('valBox').className = 'val-box val-ok';
+      $('valIcon').innerHTML = `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+      $('valTitle').textContent = 'Enkripsi Selesai';
+      $('valDesc').textContent = 'Teks berhasil dienkripsi menjadi cipherteks di kotak output.';
+      scrollToOutput();
+    });
+  } catch (e) { alert('Error Enkripsi: ' + e.message); }
 });
 
 let isQuickTesting = false;
 
-// Fungsi Dekripsi Fleksibel (Bisa dari Input Atas maupun Kotak Output)
+// Fungsi Dekripsi Fleksibel & Akurat
 function performDecryption() {
   const inputVal = $('inputText').value.trim();
   const outputVal = $('outputText').value.trim();
 
+  // Tentukan sumber teks cipher yang akan didekripsi:
   let cipher = '';
-  // Jika dalam mode uji bolak-balik, prioritaskan output
   if (isQuickTesting) {
     cipher = outputVal;
+  } else if (outputVal && (outputVal === lastEncryptedCipher || !inputVal)) {
+    // Jika ada hasil enkripsi di output, dekripsi teks di output
+    cipher = outputVal;
   } else if (inputVal) {
+    // Pengguna memasukkan cipherteks di input
     cipher = $('inputText').value;
   } else if (outputVal) {
     cipher = $('outputText').value;
   } else {
-    return alert('Silakan masukkan cipherteks pada kotak Input atau Output!');
+    return alert('Silakan masukkan cipherteks pada kotak Input atau Output terlebih dahulu!');
   }
 
   const kR = parseInt($('keyRail').value, 10) || 1;
@@ -163,47 +212,75 @@ function performDecryption() {
 
   let res = cipher;
   try {
-    if (activeAlgo === 'rail') res = decryptRailFence(res, kR);
-    else if (activeAlgo === 'columnar') res = decryptColumnarTransposition(res, kC);
-    else if (activeAlgo === 'playfair') res = decryptPlayfair(res, kP);
-    else if (activeAlgo === 'super') res = decryptPlayfair(decryptColumnarTransposition(decryptRailFence(res, kR), kC), kP);
+    if (activeAlgo === 'rail') {
+      res = decryptRailFence(res, kR);
+    } else if (activeAlgo === 'columnar') {
+      res = decryptColumnarTransposition(res, kC);
+    } else if (activeAlgo === 'playfair') {
+      let clean = res.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
+      if (clean.length % 2 !== 0) clean += 'X';
+      res = decryptPlayfair(clean, kP);
+    } else if (activeAlgo === 'super') {
+      let step1 = decryptRailFence(res, kR);
+      let step2 = decryptColumnarTransposition(step1, kC);
+      let clean = step2.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
+      if (clean.length % 2 !== 0) clean += 'X';
+      res = decryptPlayfair(clean, kP);
+    }
+
+    scrollToOutput();
 
     animateText($('outputText'), res, () => {
-      if (isQuickTesting) {
-        let target = $('inputText').value;
-        if (activeAlgo === 'playfair' || activeAlgo === 'super') target = target.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
-        const isMatch = res === target || res === $('inputText').value;
-        $('valBox').style.display = 'flex';
+      // Verifikasi kecocokan teks
+      let refText = isQuickTesting ? $('inputText').value : (lastOriginalPlain || $('inputText').value);
+      if (activeAlgo === 'playfair' || activeAlgo === 'super') {
+        refText = refText.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
+      }
+      const isMatch = (res === refText || res === $('inputText').value) && refText.length > 0;
+
+      if (isQuickTesting || (outputVal === lastEncryptedCipher && lastOriginalPlain)) {
         $('valBox').className = `val-box ${isMatch ? 'val-ok' : 'val-fail'}`;
         $('valIcon').innerHTML = isMatch 
           ? `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
           : `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
-        $('valTitle').textContent = isMatch ? 'Hasil Dekripsi VALID & 100% Identik' : 'Hasil Berbeda';
-        $('valDesc').textContent = isMatch ? 'Seluruh pesan awal berhasil dipulihkan secara sempurna.' : 'Terdapat perbedaan karakter.';
+        $('valTitle').textContent = isMatch ? 'Hasil Dekripsi 100% Identik' : 'Dekripsi Berbeda';
+        $('valDesc').textContent = isMatch 
+          ? 'Pesan berhasil didekripsi sempurna sesuai dengan plainteks awal.' 
+          : 'Hasil dekripsi memiliki perbedaan karakter dengan plainteks.';
         isQuickTesting = false;
       } else {
-        $('valBox').style.display = 'flex';
         $('valBox').className = 'val-box val-ok';
         $('valIcon').innerHTML = `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
         $('valTitle').textContent = 'Dekripsi Selesai';
-        $('valDesc').textContent = 'Pesan telah berhasil didekripsi menjadi plainteks di kotak output.';
+        $('valDesc').textContent = 'Cipherteks berhasil dipulihkan menjadi plainteks di kotak output.';
       }
+      scrollToOutput();
     });
-  } catch (e) { alert('Error: ' + e.message); }
+  } catch (e) { alert('Error Dekripsi: ' + e.message); }
 }
 
-// Event Listener Tombol Dekripsi (Atas & Bawah)
+// Tombol Dekripsi
 $('btnDecrypt').addEventListener('click', performDecryption);
-if ($('btnDecryptTop')) $('btnDecryptTop').addEventListener('click', performDecryption);
 
 // Uji Bolak-Balik
 $('btnQuickTest').addEventListener('click', () => {
   const text = $('inputText').value;
-  if (!text) return alert('Input teks masih kosong!');
+  if (!text.trim()) return alert('Input teks masih kosong!');
   isQuickTesting = true;
   $('btnEncrypt').click();
-  setTimeout(() => performDecryption(), 450);
+  setTimeout(() => performDecryption(), 500);
 });
+
+// Tombol Tukar / Ambil Teks dari Output ke Input
+if ($('btnSwapInput')) {
+  $('btnSwapInput').addEventListener('click', () => {
+    const out = $('outputText').value;
+    if (!out.trim()) return alert('Kotak output masih kosong!');
+    $('inputText').value = out;
+    $('outputText').value = '';
+    renderInteractiveVisualization();
+  });
+}
 
 // File I/O
 $('fileInput').addEventListener('change', (e) => {
