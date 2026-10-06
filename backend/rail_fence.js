@@ -1,17 +1,20 @@
 function createRailFencePattern(length, key) {
-  // Dengan 1 rel, semua karakter berada di rel yang sama.
+  // Dengan 1 rel tidak ada zig-zag. Rumus periode di bawah jadi 0 (modulo nol),
+  // jadi kasus ini ditangani terpisah.
   if (key === 1) return new Array(length).fill(0);
 
-  // Satu putaran zig-zag memiliki panjang 2*(key-1).
-  // Contoh key 3: rel 0, 1, 2, 1, lalu pola diulang.
+  // Satu siklus zig-zag penuh (turun lalu naik) memakan 2*(key-1) karakter.
+  // Rel paling atas dan paling bawah tidak dihitung dua kali.
   const period = 2 * (key - 1);
   const pattern = [];
 
   for (let i = 0; i < length; i++) {
-    // Posisi karakter di dalam putaran saat ini.
+    // Posisi karakter di dalam siklus saat ini (0 .. period-1)
     const pos = i % period;
 
-    // Saat turun, nomor rel bertambah. Saat naik, nomor rel bergerak kembali.
+    // pos < key : fase turun, nomor rel sama dengan pos.
+    // pos >= key: fase naik, nomor rel dicerminkan (period - pos).
+    // Contoh key=3, period=4: pos 0,1,2,3 -> rel 0,1,2,1
     pattern.push(pos < key ? pos : period - pos);
   }
   return pattern;
@@ -20,17 +23,17 @@ function createRailFencePattern(length, key) {
 function encryptRailFence(text, key) {
   validateRailFenceInput(text, key);
 
-  // Array.from membaca teks per karakter, termasuk karakter Unicode.
+  // Array.from memecah per karakter unicode (jika pakai .split('') bisa merusak emoji)
   const chars = Array.from(text);
   const pattern = createRailFencePattern(chars.length, key);
 
-  // Satu array penampung untuk setiap rel.
+  // Satu array penampung per rel
   const rails = Array.from({ length: key }, () => []);
 
-  // Masukkan tiap karakter ke rel sesuai pola zig-zag.
+  // Masukkan setiap karakter ke rel miliknya, urutan asli tetap terjaga per rel
   chars.forEach((char, i) => rails[pattern[i]].push(char));
 
-  // Ciphertext adalah isi rel pertama, lalu rel kedua, sampai rel terakhir.
+  // Ciphertext = isi rel pertama, lalu rel kedua, ... sampai rel terakhir
   return rails.map(rail => rail.join('')).join('');
 }
 
@@ -40,12 +43,13 @@ function decryptRailFence(ciphertext, key) {
   const chars = Array.from(ciphertext);
   const pattern = createRailFencePattern(chars.length, key);
 
-  // Langkah 1: hitung jumlah karakter yang harus berada pada setiap rel.
+  // Langkah 1: hitung berapa karakter yang jatuh di tiap rel.
+  // Ini menentukan panjang potongan ciphertext untuk tiap rel.
   const counts = new Array(key).fill(0);
   pattern.forEach(rail => counts[rail]++);
 
-  // Langkah 2: potong ciphertext menjadi bagian untuk tiap rel.
-  // Bagian pertama milik rel pertama, lalu bagian berikutnya milik rel selanjutnya.
+  // Langkah 2: potong ciphertext berurutan. Potongan pertama milik rel pertama,
+  // berikutnya rel kedua, dst, dengan panjang sesuai counts.
   const rails = [];
   let cursor = 0;
   for (let rail = 0; rail < key; rail++) {
@@ -53,8 +57,9 @@ function decryptRailFence(ciphertext, key) {
     cursor += counts[rail];
   }
 
-  // Langkah 3: ikuti pola zig-zag untuk mengambil karakter dari rel yang benar.
-  // next menyimpan posisi karakter berikutnya yang belum diambil dari tiap rel.
+  // Langkah 3: telusuri pola zig-zag dari kiri ke kanan. Di setiap posisi,
+  // ambil karakter berikutnya dari rel yang bersangkutan.
+  // next[rail] menyimpan indeks karakter yang belum terpakai di rel tersebut.
   const next = new Array(key).fill(0);
   return pattern.map(rail => rails[rail][next[rail]++]).join('');
 }
