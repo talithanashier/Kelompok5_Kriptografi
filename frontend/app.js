@@ -138,10 +138,25 @@ $('btnEncrypt').addEventListener('click', () => {
   } catch (e) { alert('Error: ' + e.message); }
 });
 
-// Dekripsi (Tombol di Bawah Output)
-$('btnDecrypt').addEventListener('click', () => {
-  const cipher = $('outputText').value;
-  if (!cipher.trim()) return alert('Kotak output cipherteks kosong!');
+let isQuickTesting = false;
+
+// Fungsi Dekripsi Fleksibel (Bisa dari Input Atas maupun Kotak Output)
+function performDecryption() {
+  const inputVal = $('inputText').value.trim();
+  const outputVal = $('outputText').value.trim();
+
+  let cipher = '';
+  // Jika dalam mode uji bolak-balik, prioritaskan output
+  if (isQuickTesting) {
+    cipher = outputVal;
+  } else if (inputVal) {
+    cipher = $('inputText').value;
+  } else if (outputVal) {
+    cipher = $('outputText').value;
+  } else {
+    return alert('Silakan masukkan cipherteks pada kotak Input atau Output!');
+  }
+
   const kR = parseInt($('keyRail').value, 10) || 1;
   const kC = parseInt($('keyCol').value, 10) || 1;
   const kP = $('keyPf').value.trim() || 'K';
@@ -154,24 +169,40 @@ $('btnDecrypt').addEventListener('click', () => {
     else if (activeAlgo === 'super') res = decryptPlayfair(decryptColumnarTransposition(decryptRailFence(res, kR), kC), kP);
 
     animateText($('outputText'), res, () => {
-      let target = $('inputText').value;
-      if (activeAlgo === 'playfair' || activeAlgo === 'super') target = target.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
-      const isMatch = res === target || res === $('inputText').value;
-      $('valBox').style.display = 'flex';
-      $('valBox').className = `val-box ${isMatch ? 'val-ok' : 'val-fail'}`;
-      $('valIcon').innerHTML = isMatch 
-        ? `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
-        : `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
-      $('valTitle').textContent = isMatch ? 'Hasil Dekripsi VALID & 100% Identik' : 'Hasil Berbeda';
-      $('valDesc').textContent = isMatch ? 'Seluruh pesan awal berhasil dipulihkan secara sempurna.' : 'Terdapat perbedaan karakter.';
+      if (isQuickTesting) {
+        let target = $('inputText').value;
+        if (activeAlgo === 'playfair' || activeAlgo === 'super') target = target.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
+        const isMatch = res === target || res === $('inputText').value;
+        $('valBox').style.display = 'flex';
+        $('valBox').className = `val-box ${isMatch ? 'val-ok' : 'val-fail'}`;
+        $('valIcon').innerHTML = isMatch 
+          ? `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+          : `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+        $('valTitle').textContent = isMatch ? 'Hasil Dekripsi VALID & 100% Identik' : 'Hasil Berbeda';
+        $('valDesc').textContent = isMatch ? 'Seluruh pesan awal berhasil dipulihkan secara sempurna.' : 'Terdapat perbedaan karakter.';
+        isQuickTesting = false;
+      } else {
+        $('valBox').style.display = 'flex';
+        $('valBox').className = 'val-box val-ok';
+        $('valIcon').innerHTML = `<svg class="ui-icon val-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+        $('valTitle').textContent = 'Dekripsi Selesai';
+        $('valDesc').textContent = 'Pesan telah berhasil didekripsi menjadi plainteks di kotak output.';
+      }
     });
   } catch (e) { alert('Error: ' + e.message); }
-});
+}
+
+// Event Listener Tombol Dekripsi (Atas & Bawah)
+$('btnDecrypt').addEventListener('click', performDecryption);
+if ($('btnDecryptTop')) $('btnDecryptTop').addEventListener('click', performDecryption);
 
 // Uji Bolak-Balik
 $('btnQuickTest').addEventListener('click', () => {
+  const text = $('inputText').value;
+  if (!text) return alert('Input teks masih kosong!');
+  isQuickTesting = true;
   $('btnEncrypt').click();
-  setTimeout(() => $('btnDecrypt').click(), 450);
+  setTimeout(() => performDecryption(), 450);
 });
 
 // File I/O
