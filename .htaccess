@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1. Izinkan akses langsung ke folder backend
+  RewriteCond %{REQUEST_URI} ^/backend/ [NC]
+  RewriteRule ^ - [L]
+
+  # 2. Tangani request backend jika dipanggil relatif dari frontend
+  RewriteRule ^frontend/backend/(.*)$ backend/$1 [L]
+
+  # 3. Arahkan semua request publik ke folder frontend secara transparan (URL tetap bersih tanpa tulisan /frontend/)
+  RewriteCond %{REQUEST_URI} !^/frontend/ [NC]
+  RewriteRule ^N(.*)$ frontend/$1 [L]
+</IfModule>

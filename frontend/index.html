@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CipherStack — Visual Cryptography Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-tag">
+        <svg class="ui-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        CIPHERSTUDIO
+      </div>
+      <h1>Pilih Algoritma Kriptografi</h1>
+      <p class="subtitle">Klik salah satu kartu di bawah untuk membuka ruang kerja & visualisasi interaktifnya.</p>
+    </header>
+
+    <!-- 3 KARTU BERDAMPINGAN PERSIS SEPERTI GAMBAR -->
+    <section class="cards-showcase">
+      <!-- 01 Playfair Card (Default Active) -->
+      <div class="show-card card-playfair active" data-algo="playfair">
+        <div class="card-top">
+          <span class="card-num num-purple">01</span>
+          <div>
+            <h3>Playfair Cipher</h3>
+            <span class="card-desc">Substitusi Poligram · matriks 5×5</span>
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="pf-mini-grid" id="pfPreviewGrid"></div>
+          <div class="pf-digraphs-row" id="pfPreviewDigraphs"></div>
+        </div>
+        <div class="io-sample">
+          <div><small>IN</small> <span id="pfSampleIn">HIDETHEGOLDINTHETREESTUMP</span></div>
+          <div><small>OUT</small> <span id="pfSampleOut">EPEHPLDABCERURLHKIQIHQBZSK</span></div>
+        </div>
+      </div>
+
+      <!-- 02 Columnar Card -->
+      <div class="show-card card-columnar" data-algo="columnar">
+        <div class="card-top">
+          <span class="card-num num-cyan">02</span>
+          <div>
+            <h3>Columnar Transposition</h3>
+            <span class="card-desc">Transposisi · tulis per baris, baca per kolom</span>
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="col-headers"><span>K1</span><span>K2</span><span>K3</span><span>K4</span></div>
+          <div class="col-mini-grid" id="colPreviewGrid"></div>
+        </div>
+        <div class="io-sample">
+          <div><small>IN</small> <span id="colSampleIn">EPEHPLDABCERURLHKIQIHQBZSK</span></div>
+          <div><small>OUT</small> <span id="colSampleOut">EPBUKHSPLCRIQKEDELQBHARHIZ</span></div>
+        </div>
+      </div>
+
+      <!-- 03 Rail Fence Card -->
+      <div class="show-card card-rail" data-algo="rail">
+        <div class="card-top">
+          <span class="card-num num-pink">03</span>
+          <div>
+            <h3>Rail Fence Cipher</h3>
+            <span class="card-desc">Transposisi · pola zig-zag rel</span>
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="rail-mini-preview" id="railPreviewGrid"></div>
+        </div>
+        <div class="io-sample">
+          <div><small>IN</small> <span id="railSampleIn">EPBUKHSPLCRIQKEDELQBHARHIZ</span></div>
+          <div><small>OUT</small> <span id="railSampleOut">EKLQEHIPUHPCLKDLBAHZBSREQR</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Super Enkripsi Banner Option -->
+    <div class="super-banner" id="btnSuper">
+      <span class="super-badge">
+        <svg class="ui-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        SUPER ENKRIPSI
+      </span>
+      <span>Klik di sini untuk menjalankan gabungan 3 algoritma (Playfair → Columnar → Rail Fence) sekaligus!</span>
+    </div>
+
+    <!-- WORKSPACE AREA: MUNCUL SESUAI KARTU YANG DIKLIK -->
+    <section class="workspace-card" id="workspaceArea">
+      <!-- Title Workspace -->
+      <div class="ws-header">
+        <div>
+          <span class="ws-badge" id="wsBadge">03 RAIL FENCE</span>
+          <h2 id="wsTitle">Rail Fence Cipher Workspace</h2>
+        </div>
+        <div class="ws-actions">
+          <button class="btn btn-sm btn-ghost" id="btnSample">
+            <svg class="ui-icon" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>
+            Contoh Teks
+          </button>
+          <label class="btn btn-sm btn-ghost">
+            <svg class="ui-icon" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
+            Muat File <input type="file" id="fileInput" accept=".txt" hidden />
+          </label>
+        </div>
+      </div>
+
+      <!-- Input Plaintext & Key -->
+      <div class="input-section">
+        <label><b>Input Plainteks:</b></label>
+        <textarea id="inputText" rows="3" placeholder="Ketik plainteks di sini...">selamat pagi</textarea>
+
+        <!-- Kunci Dinamis Sesuai Algoritma -->
+        <div class="key-row">
+          <div class="key-field" id="grpRail">
+            <label>Key (jumlah rel):</label>
+            <input type="number" id="keyRail" value="3" min="1" max="25" />
+          </div>
+
+          <div class="key-field" id="grpCol" style="display:none;">
+            <label>Key (jumlah kolom):</label>
+            <input type="number" id="keyCol" value="4" min="1" max="25" />
+          </div>
+
+          <div class="key-field" id="grpPf" style="display:none;">
+            <label>Key Playfair (kata):</label>
+            <input type="text" id="keyPf" value="KRIPTOGRAFI" />
+          </div>
+
+          <div class="btn-group-enc">
+            <button class="btn btn-primary" id="btnEncrypt">Enkripsi Teks</button>
+            <button class="btn btn-outline" id="btnQuickTest">Uji Bolak-Balik</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visualisasi Interaktif (Zig-Zag / Matrix / Columnar) -->
+      <div class="viz-section">
+        <div class="viz-header">
+          <h3>Visualisasi Interaktif</h3>
+          <small class="text-muted" id="vizDesc">Pratinjau input pada pola zig-zag.</small>
+        </div>
+        <div class="viz-content" id="vizContent"></div>
+      </div>
+
+      <!-- Output Ciphertext & Tombol Dekripsi Berada di Bawah Output -->
+      <div class="output-section">
+        <div class="output-header">
+          <label><b>Output (Cipherteks / Hasil Dekripsi):</b></label>
+          <div class="out-tools">
+            <span class="link-tool" id="btnCopy">
+              <svg class="ui-icon" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+              Salin
+            </span>
+            <span class="link-tool" id="btnSave">
+              <svg class="ui-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Simpan .txt
+            </span>
+          </div>
+        </div>
+        <textarea id="outputText" rows="3" class="mono-font" placeholder="Hasil enkripsi akan muncul di sini..."></textarea>
+
+        <!-- Tombol Dekripsi Tepat di Bawah Output -->
+        <div class="decrypt-bar">
+          <button class="btn btn-decrypt" id="btnDecrypt">Dekripsi Teks</button>
+        </div>
+
+        <!-- Validasi Kebenaran -->
+        <div id="valBox" class="val-box" style="display:none;">
+          <span class="val-icon" id="valIcon">
+            <svg class="ui-icon val-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </span>
+          <div>
+            <strong id="valTitle">Hasil 100% Identik</strong>
+            <p id="valDesc">Pesan berhasil didekripsi sempurna sesuai dengan plainteks awal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Algoritma Backend -->
+  <script src="../backend/playfair.js"></script>
+  <script src="../backend/columnar_transposition.js"></script>
+  <script src="../backend/rail_fence.js"></script>
+  <!-- Skrip Frontend -->
+  <script src="app.js"></script>
+</body>
+</html>

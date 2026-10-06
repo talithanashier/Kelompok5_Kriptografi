@@ -1,0 +1,970 @@
+/* =========================================================
+   CipherStack — Kawaii & Cozy Game Aesthetic Stylesheet
+   Inspired by Pastel Cozy Game UI & Character Customizers
+   ========================================================= */
+
+:root {
+  --border-color: #4a2e2b;
+  --border-width: 2.5px;
+  --bg-main: #fdf5ef;
+  --bg-card: #fffdfa;
+  --bg-inner: #fff5ee;
+  
+  --text-main: #442a27;
+  --text-muted: #8c6e66;
+  --text-light: #ab8f88;
+  
+  --pastel-pink: #ffaec0;
+  --pastel-pink-dark: #f08ea4;
+  --pastel-pink-light: #ffeef2;
+  
+  --pastel-purple: #d5c2f8;
+  --pastel-purple-dark: #bba0ec;
+  --pastel-purple-light: #f3edfd;
+  
+  --pastel-cyan: #9fe2f7;
+  --pastel-cyan-dark: #6eceea;
+  --pastel-cyan-light: #e8f9fd;
+  
+  --pastel-yellow: #ffe699;
+  --pastel-yellow-dark: #f7d268;
+  --pastel-yellow-light: #fff8e1;
+  
+  --pastel-green: #bceecf;
+  --pastel-green-dark: #8fe0ad;
+  --pastel-green-light: #eafaf0;
+  
+  --pastel-peach: #ffd4b8;
+  --shadow-solid: 0 5px 0 var(--border-color);
+  --shadow-solid-sm: 0 3px 0 var(--border-color);
+  --shadow-solid-lg: 0 8px 0 var(--border-color);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Fredoka', 'Quicksand', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom Cozy Scrollbars */
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-inner);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #dabeb2;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-color);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pastel-pink);
+}
+
+/* =========================================================
+   UI Icons (SVG)
+   ========================================================= */
+.ui-icon {
+  width: 1.15em;
+  height: 1.15em;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  display: inline-block;
+  vertical-align: -0.16em;
+  flex-shrink: 0;
+}
+
+.val-svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.5;
+  display: block;
+}
+
+.val-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  background-image: radial-gradient(#eccbbe 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+  color: var(--text-main);
+  padding: 32px 16px 48px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* =========================================================
+   Header Section
+   ========================================================= */
+.header {
+  text-align: center;
+  position: relative;
+  padding: 10px 0;
+}
+
+.logo-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 6px 16px;
+  border-radius: 100px;
+  background: var(--pastel-pink);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--border-color);
+  box-shadow: var(--shadow-solid-sm);
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
+}
+
+.subtitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 6px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* =========================================================
+   3 Cards Showcase (Character Customizer Slot Style)
+   ========================================================= */
+.cards-showcase {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.show-card {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 24px;
+  padding: 20px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-solid);
+  position: relative;
+  overflow: hidden;
+}
+
+.show-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-solid-lg);
+}
+
+.show-card.active {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-solid-lg), 0 0 0 4px var(--card-accent);
+  background: #ffffff;
+}
+
+/* Card Accent Themes */
+.card-playfair {
+  --card-accent: var(--pastel-purple);
+  --card-pill: var(--pastel-purple-light);
+  --card-btn: #c7aefa;
+}
+
+.card-columnar {
+  --card-accent: var(--pastel-cyan);
+  --card-pill: var(--pastel-cyan-light);
+  --card-btn: #8ce1f7;
+}
+
+.card-rail {
+  --card-accent: var(--pastel-pink);
+  --card-pill: var(--pastel-pink-light);
+  --card-btn: #ff9fba;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-top h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.card-desc {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.card-num {
+  font-size: 13px;
+  font-weight: 800;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-solid-sm);
+  flex-shrink: 0;
+}
+
+.num-purple {
+  background: var(--pastel-purple);
+  color: var(--border-color);
+}
+
+.num-cyan {
+  background: var(--pastel-cyan);
+  color: var(--border-color);
+}
+
+.num-pink {
+  background: var(--pastel-pink);
+  color: var(--border-color);
+}
+
+/* Showcase Mini Preview Box (Like Item Grid Slots) */
+.preview-box {
+  background: var(--bg-inner);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 18px;
+  padding: 14px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: inset 0 3px 6px rgba(74, 46, 43, 0.04);
+}
+
+.pf-mini-grid, .col-mini-grid, .col-headers {
+  display: grid;
+  gap: 4px;
+}
+
+.pf-mini-grid {
+  grid-template-columns: repeat(5, 26px);
+}
+
+.col-mini-grid, .col-headers {
+  grid-template-columns: repeat(4, 26px);
+}
+
+.col-headers {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #278aa6;
+}
+
+.pf-mini-cell, .col-mini-cell, .rm-cell {
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-family: 'Fredoka', 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1.5px solid var(--border-color);
+}
+
+.pf-mini-cell {
+  height: 26px;
+  background: var(--pastel-purple);
+  color: var(--text-main);
+  box-shadow: 0 2px 0 var(--border-color);
+}
+
+.col-mini-cell {
+  height: 24px;
+  background: var(--pastel-cyan);
+  color: var(--text-main);
+  box-shadow: 0 2px 0 var(--border-color);
+}
+
+.pf-digraphs-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  max-width: 200px;
+}
+
+.pf-chip {
+  font-size: 10px;
+  font-family: 'Fredoka', 'JetBrains Mono', monospace;
+  font-weight: 700;
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: var(--text-main);
+  box-shadow: 0 1.5px 0 var(--border-color);
+}
+
+.rail-mini-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.rm-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.rm-cell {
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+}
+
+.rm-cell.active {
+  background: var(--pastel-pink);
+  color: var(--border-color);
+  box-shadow: 0 2px 0 var(--border-color);
+}
+
+.rm-cell.dot {
+  background: rgba(74, 46, 43, 0.04);
+  border-color: transparent;
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+.io-sample {
+  font-family: 'Fredoka', 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1.5px dashed #dabeb2;
+}
+
+.io-sample div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.io-sample small {
+  color: var(--border-color);
+  font-weight: 800;
+  margin-right: 4px;
+  background: var(--pastel-yellow);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+/* =========================================================
+   Super Enkripsi Banner (Cute Ribbon Banner)
+   ========================================================= */
+.super-banner {
+  background: var(--pastel-yellow-light);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 20px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-solid);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.super-banner:hover {
+  background: var(--pastel-yellow);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-solid-lg);
+}
+
+.super-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  background: var(--pastel-pink);
+  color: var(--border-color);
+  border: var(--border-width) solid var(--border-color);
+  padding: 5px 12px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-solid-sm);
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   Workspace Main Card
+   ========================================================= */
+.workspace-card {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 28px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  box-shadow: var(--shadow-solid-lg);
+}
+
+.ws-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 2px dashed #ecd0c3;
+  padding-bottom: 18px;
+}
+
+.ws-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: var(--pastel-pink);
+  color: var(--border-color);
+  border: 2px solid var(--border-color);
+  padding: 4px 12px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-solid-sm);
+  margin-bottom: 6px;
+}
+
+.ws-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.ws-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* =========================================================
+   Input & Form Controls
+   ========================================================= */
+.input-section label, .output-header label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  display: block;
+}
+
+textarea, .key-field input {
+  background: #ffffff;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 16px;
+  color: var(--text-main);
+  outline: none;
+  font-weight: 600;
+  box-shadow: inset 0 2px 4px rgba(74, 46, 43, 0.04);
+  transition: all 0.2s ease;
+}
+
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+textarea:focus, .key-field input:focus {
+  border-color: #f08ea4;
+  box-shadow: 0 0 0 4px var(--pastel-pink-light), inset 0 2px 4px rgba(74, 46, 43, 0.04);
+}
+
+.mono-font {
+  font-family: 'Fredoka', 'JetBrains Mono', monospace;
+  font-size: 14px;
+}
+
+.key-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.key-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.key-field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.key-field input {
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: 'Fredoka', 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+.key-field input[type="number"] {
+  width: 110px;
+}
+
+.key-field input[type="text"] {
+  width: 180px;
+  text-transform: uppercase;
+}
+
+.btn-group-enc {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* =========================================================
+   Buttons (Kawaii Tactile Game Push-Buttons)
+   ========================================================= */
+.btn {
+  padding: 10px 20px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-solid-sm);
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-solid);
+}
+
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--border-color);
+}
+
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+.btn-primary {
+  background: var(--pastel-pink);
+  color: var(--border-color);
+}
+
+.btn-primary:hover {
+  background: var(--pastel-pink-dark);
+}
+
+.btn-outline {
+  background: var(--pastel-yellow);
+  color: var(--border-color);
+}
+
+.btn-outline:hover {
+  background: var(--pastel-yellow-dark);
+}
+
+.btn-ghost {
+  background: #ffffff;
+  color: var(--text-main);
+}
+
+.btn-ghost:hover {
+  background: var(--pastel-peach);
+}
+
+/* =========================================================
+   Interactive Visualization (Game Grid Display)
+   ========================================================= */
+.viz-section {
+  background: var(--bg-inner);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: inset 0 3px 6px rgba(74, 46, 43, 0.03);
+}
+
+.viz-header {
+  margin-bottom: 14px;
+}
+
+.viz-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.viz-content {
+  overflow-x: auto;
+  padding: 10px 4px;
+}
+
+.rail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rail-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--border-color);
+  background: var(--pastel-yellow);
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px 6px;
+  width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 0 var(--border-color);
+}
+
+.rail-cell {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+  border: var(--border-width) solid var(--border-color);
+}
+
+.rail-cell.filled {
+  background: var(--pastel-pink) !important;
+  color: var(--border-color);
+  box-shadow: var(--shadow-solid-sm);
+  animation: popCell 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.rail-cell.filled:hover {
+  transform: scale(1.15) translateY(-3px);
+  box-shadow: var(--shadow-solid);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.rail-cell.empty {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1.5px dashed #dac2b6 !important;
+  box-shadow: none !important;
+}
+
+@keyframes popCell {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   Output & Decrypt Section
+   ========================================================= */
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.out-tools {
+  display: flex;
+  gap: 8px;
+}
+
+.link-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--border-color);
+  background: var(--pastel-yellow);
+  border: 1.5px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--border-color);
+  transition: all 0.15s ease;
+}
+
+.link-tool:hover {
+  background: var(--pastel-yellow-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 var(--border-color);
+  text-decoration: none;
+}
+
+.link-tool:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--border-color);
+}
+
+.decrypt-bar {
+  margin-top: 14px;
+}
+
+.btn-decrypt {
+  width: 100%;
+  background: var(--pastel-cyan);
+  color: var(--border-color);
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.btn-decrypt:hover {
+  background: var(--pastel-cyan-dark);
+}
+
+/* =========================================================
+   Validation Box (Toast Style)
+   ========================================================= */
+.val-box {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-solid-sm);
+  animation: popCell 0.25s ease;
+}
+
+.val-box.val-ok {
+  background: var(--pastel-green);
+  color: var(--border-color);
+}
+
+.val-box.val-fail {
+  background: #ffd6d6;
+  color: var(--border-color);
+}
+
+.val-icon {
+  font-size: 24px;
+}
+
+.val-box strong {
+  font-size: 14px;
+  font-weight: 800;
+  display: block;
+}
+
+.val-box p {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* =========================================================
+   Responsive Breakpoints (Desktop -> Tablet -> Mobile)
+   ========================================================= */
+
+/* Tablet & Medium Screens */
+@media (max-width: 900px) {
+  .cards-showcase {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .workspace-card {
+    padding: 22px;
+    border-radius: 24px;
+  }
+  
+  .btn-group-enc {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .btn-group-enc .btn {
+    flex: 1;
+  }
+}
+
+/* Mobile Screens */
+@media (max-width: 640px) {
+  body {
+    padding: 20px 12px 36px;
+  }
+  
+  .container {
+    gap: 18px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  .subtitle {
+    font-size: 13.5px;
+  }
+  
+  .super-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    border-radius: 18px;
+  }
+  
+  .ws-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .ws-header h2 {
+    font-size: 20px;
+  }
+  
+  .ws-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+  
+  .ws-actions .btn {
+    flex: 1;
+  }
+  
+  .key-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .key-field input[type="number"],
+  .key-field input[type="text"] {
+    width: 100%;
+  }
+  
+  .btn-group-enc {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+  
+  .output-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .out-tools {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .val-box {
+    padding: 12px 14px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+  
+  .val-box strong {
+    font-size: 13px;
+  }
+  
+  .val-box p {
+    font-size: 12px;
+  }
+}
+
+/* Extra Small Phones (< 400px) */
+@media (max-width: 400px) {
+  h1 {
+    font-size: 21px;
+  }
+  
+  .btn-group-enc,
+  .ws-actions {
+    flex-direction: column;
+  }
+  
+  .btn-group-enc .btn,
+  .ws-actions .btn {
+    width: 100%;
+  }
+  
+  .out-tools {
+    justify-content: stretch;
+  }
+  
+  .out-tools .link-tool {
+    flex: 1;
+    justify-content: center;
+  }
+}
