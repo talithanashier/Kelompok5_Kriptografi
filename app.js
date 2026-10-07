@@ -407,22 +407,156 @@ function renderColumnarVisualization(container, text, mode, isAutoDerived, overr
   container.innerHTML = html;
 }
 
-// 2. Visualisasi Rail Fence Cipher
+// 2. Visualisasi Rail Fence Cipher (Enkripsi & Dekripsi Interaktif)
 function renderRailVisualization(container, text, mode, overrideKey) {
-  const key = overrideKey !== undefined ? overrideKey : Math.max(1, parseInt($('keyRail').value, 10) || 1);
-  const chars = Array.from(text);
-  const pattern = createRailFencePattern(chars.length, key);
-  let html = '<div style="display:flex; flex-direction:column; gap:6px;">';
-  
-  for (let r = 0; r < key; r++) {
-    html += `<div class="rail-row"><span class="rail-label">R${r + 1}</span>` +
-      chars.map((c, i) => pattern[i] === r 
-        ? `<span class="rail-cell filled" title="${c === ' ' ? 'Spasi' : c}">${c === ' ' ? '␣' : c}</span>`
-        : `<span class="rail-cell empty"></span>`
-      ).join('') + '</div>';
+  const cleanText = (text || '').replace(/\s+/g, '');
+  const N = cleanText.length;
+  if (!N) {
+    return container.innerHTML = '<span class="text-muted">Ketik teks di atas untuk melihat visualisasi.</span>';
   }
-  html += '</div>';
 
+  const key = overrideKey !== undefined ? overrideKey : Math.max(1, parseInt($('keyRail').value, 10) || 1);
+  const pattern = createRailFencePattern(N, key);
+  const chars = Array.from(cleanText);
+
+  // Palet tema per rel untuk visual tracing
+  const railThemes = ['#ffaec0', '#9fe2f7', '#d5c2f8', '#ffe699', '#bceecf', '#ffd4b8'];
+
+  let html = '<div style="display:flex; flex-direction:column; gap:10px; width:100%;">';
+
+  if (mode === 'encrypt') {
+    // ==========================================
+    // MODE ENKRIPSI
+    // 1. Plainteks ditulis zig-zag kolom demi kolom
+    // 2. Cipherteks dibaca baris per rel dari atas ke bawah
+    // ==========================================
+    const rails = Array.from({ length: key }, () => []);
+    chars.forEach((c, i) => rails[pattern[i]].push(c));
+
+    // Panel Ringkasan Pembacaan per Rel
+    html += `
+      <div class="rail-summary-card">
+        <div class="rail-summary-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span>Enkripsi: Karakter plainteks (${N} huruf, spasi diabaikan) ditulis zig-zag lalu dibaca per baris rel</span>
+        </div>
+        <div class="rail-parts-container">
+    `;
+
+    for (let r = 0; r < key; r++) {
+      const bg = railThemes[r % railThemes.length];
+      html += `
+        <div class="rail-part-badge">
+          <span class="rail-part-tag" style="background:${bg};">Rel ${r + 1} (${rails[r].length} huruf)</span>
+          <span class="rail-part-chars">${rails[r].join(' ') || '—'}</span>
+        </div>
+      `;
+    }
+
+    const cipherResult = rails.map(rl => rl.join('')).join('');
+    html += `
+        </div>
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-top:2px;">
+          Cipherteks hasil pembacaan baris: <strong style="color:var(--text-main); font-family:'Fredoka','JetBrains Mono',monospace;">${cipherResult}</strong>
+        </div>
+      </div>
+    `;
+
+    // Grid Zig-Zag
+    html += '<div style="overflow-x:auto; padding:4px 0;"><div style="display:inline-flex; flex-direction:column; gap:6px;">';
+    for (let r = 0; r < key; r++) {
+      const bg = railThemes[r % railThemes.length];
+      html += `<div class="rail-row"><span class="rail-label" style="background:${bg};">R${r + 1}</span>`;
+      for (let i = 0; i < N; i++) {
+        if (pattern[i] === r) {
+          html += `<span class="rail-cell filled" style="background:${bg} !important;" title="Langkah #${i + 1}: Karakter '${chars[i]}' pada Rel ${r + 1}"><small class="cell-sub-idx">${i + 1}</small>${chars[i]}</span>`;
+        } else {
+          html += `<span class="rail-cell empty">·</span>`;
+        }
+      }
+      html += '</div>';
+    }
+    html += '</div></div>';
+
+  } else {
+    // ==========================================
+    // MODE DEKRIPSI
+    // 1. Hitung kuota karakter untuk tiap rel berdasarkan pola zig-zag
+    // 2. Potong cipherteks berurutan sesuai kuota per rel
+    // 3. Alokasikan potongan kembali ke posisi rel di grid zig-zag
+    // 4. Baca lintasan zig-zag dari kiri ke kanan -> Plainteks
+    // ==========================================
+    const counts = new Array(key).fill(0);
+    pattern.forEach(r => counts[r]++);
+
+    // Potong cipherteks berurutan untuk tiap rel
+    const railChunks = [];
+    let cur = 0;
+    for (let r = 0; r < key; r++) {
+      railChunks.push(chars.slice(cur, cur + counts[r]));
+      cur += counts[r];
+    }
+
+    // Panel Langkah 1 & 2: Pemotongan Cipherteks per Rel
+    html += `
+      <div class="rail-summary-card">
+        <div class="rail-summary-title">
+          <svg class="ui-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>Langkah 1 & 2: Cipherteks (${N} huruf, spasi diabaikan) dipotong sesuai kuota zig-zag tiap rel</span>
+        </div>
+        <div class="rail-parts-container">
+    `;
+
+    for (let r = 0; r < key; r++) {
+      const bg = railThemes[r % railThemes.length];
+      html += `
+        <div class="rail-part-badge">
+          <span class="rail-part-tag" style="background:${bg};">Potongan Rel ${r + 1} (${counts[r]} huruf)</span>
+          <span class="rail-part-chars">${railChunks[r].join(' ') || '—'}</span>
+        </div>
+      `;
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+
+    // Langkah 3: Penempatan karakter kembali ke grid rel zig-zag
+    const reconstructedChars = new Array(N);
+
+    let gridRowsHtml = '';
+    for (let r = 0; r < key; r++) {
+      const bg = railThemes[r % railThemes.length];
+      gridRowsHtml += `<div class="rail-row"><span class="rail-label" style="background:${bg};">R${r + 1}</span>`;
+
+      let railCursor = 0;
+      for (let i = 0; i < N; i++) {
+        if (pattern[i] === r) {
+          const ch = railChunks[r][railCursor++];
+          reconstructedChars[i] = ch;
+          gridRowsHtml += `<span class="rail-cell filled" style="background:${bg} !important;" title="Langkah #${i + 1}: Karakter '${ch}' dialokasikan ke Rel ${r + 1}"><small class="cell-sub-idx">${i + 1}</small>${ch}</span>`;
+        } else {
+          gridRowsHtml += `<span class="rail-cell empty">·</span>`;
+        }
+      }
+      gridRowsHtml += '</div>';
+    }
+
+    html += '<div style="overflow-x:auto; padding:4px 0;"><div style="display:inline-flex; flex-direction:column; gap:6px;">' + gridRowsHtml + '</div></div>';
+
+    // Langkah 4: Pita Rekonstruksi Plainteks
+    const recoveredPlain = reconstructedChars.join('');
+    html += `
+      <div class="rail-recon-box">
+        <span class="rail-recon-badge">Langkah 4</span>
+        <span>Pembacaan zig-zag dari kiri ke kanan (1 ➔ 2 ➔ 3 ➔ ...):</span>
+        <strong style="font-family:'Fredoka','JetBrains Mono',monospace; font-size:14px; color:var(--border-color); background:#ffffff; padding:2px 8px; border-radius:6px; border:1px solid var(--border-color);">${recoveredPlain}</strong>
+      </div>
+    `;
+  }
+
+  html += '</div>';
   container.innerHTML = html;
 }
 
@@ -532,7 +666,7 @@ function performDecryption() {
       let refText = isQuickTesting ? $('inputText').value : (lastOriginalPlain || $('inputText').value);
       if (activeAlgo === 'playfair' || activeAlgo === 'super') {
         refText = refText.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
-      } else if (activeAlgo === 'columnar') {
+      } else if (activeAlgo === 'columnar' || activeAlgo === 'rail') {
         refText = refText.replace(/\s+/g, '');
       }
       const isMatch = (res === refText || res === $('inputText').value || res.replace(/\s+/g, '') === refText.replace(/\s+/g, '')) && refText.length > 0;
