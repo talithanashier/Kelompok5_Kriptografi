@@ -146,8 +146,10 @@ function renderInteractiveVisualization() {
     return container.innerHTML = '<span class="text-muted">Ketik teks di atas untuk melihat visualisasi.</span>';
   }
 
-  if (activeAlgo === 'rail' || activeAlgo === 'super') {
+  if (activeAlgo === 'rail') {
     renderRailVisualization(container, sourceText, vizMode);
+  } else if (activeAlgo === 'super') {
+    renderSuperVisualization(container, sourceText, vizMode);
   } else if (activeAlgo === 'columnar') {
     renderColumnarVisualization(container, sourceText, vizMode, isAutoDerived);
   } else if (activeAlgo === 'playfair') {
@@ -155,9 +157,204 @@ function renderInteractiveVisualization() {
   }
 }
 
+// State tab aktif di visualisasi Super Enkripsi ('all', '1', '2', '3')
+let superActiveTab = 'all';
+
+// Visualisasi Lengkap 3 Lapis Super Enkripsi (Pipeline Interaktif)
+function renderSuperVisualization(container, text, mode) {
+  const kP = $('keyPf').value.trim() || 'KRIPTOGRAFI';
+  const kC = Math.max(1, parseInt($('keyCol').value, 10) || 1);
+  const kR = Math.max(1, parseInt($('keyRail').value, 10) || 1);
+
+  if (!text) {
+    container.innerHTML = '<span class="text-muted">Ketik teks di atas untuk melihat visualisasi Super Enkripsi.</span>';
+    return;
+  }
+
+  let s1_name = '', s2_name = '', s3_name = '';
+  let s1_algo = '', s2_algo = '', s3_algo = '';
+  let s1_keyText = '', s2_keyText = '', s3_keyText = '';
+  let s1_in = text, s1_out = '', s2_in = '', s2_out = '', s3_in = '', s3_out = '';
+  let s1_keyVal, s2_keyVal, s3_keyVal;
+
+  try {
+    if (mode === 'encrypt') {
+      // ENKRIPSI: Playfair (Lapis 1) -> Columnar (Lapis 2) -> Rail Fence (Lapis 3)
+      s1_name = 'Playfair Cipher (Substitusi Matriks 5×5)';
+      s1_algo = 'playfair';
+      s1_keyVal = kP;
+      s1_keyText = `Key: "${kP}"`;
+      s1_in = text;
+      s1_out = encryptPlayfair(s1_in, kP);
+
+      s2_name = 'Columnar Transposition (Transposisi Kolom)';
+      s2_algo = 'columnar';
+      s2_keyVal = kC;
+      s2_keyText = `Key: ${kC} kolom`;
+      s2_in = s1_out;
+      s2_out = encryptColumnarTransposition(s2_in.replace(/\s+/g, ''), kC);
+
+      s3_name = 'Rail Fence Cipher (Transposisi Rel Zig-Zag)';
+      s3_algo = 'rail';
+      s3_keyVal = kR;
+      s3_keyText = `Key: ${kR} rel`;
+      s3_in = s2_out;
+      s3_out = encryptRailFence(s3_in, kR);
+    } else {
+      // DEKRIPSI: Rail Fence (Lapis 1) -> Columnar (Lapis 2) -> Playfair (Lapis 3)
+      s1_name = 'Rail Fence Cipher (Dekripsi Rel Zig-Zag)';
+      s1_algo = 'rail';
+      s1_keyVal = kR;
+      s1_keyText = `Key: ${kR} rel`;
+      s1_in = text;
+      s1_out = decryptRailFence(s1_in, kR);
+
+      s2_name = 'Columnar Transposition (Dekripsi Matriks Kolom)';
+      s2_algo = 'columnar';
+      s2_keyVal = kC;
+      s2_keyText = `Key: ${kC} kolom`;
+      s2_in = s1_out;
+      s2_out = decryptColumnarTransposition(s2_in.replace(/\s+/g, ''), kC);
+
+      s3_name = 'Playfair Cipher (Dekripsi Matriks 5×5)';
+      s3_algo = 'playfair';
+      s3_keyVal = kP;
+      s3_keyText = `Key: "${kP}"`;
+      s3_in = s2_out;
+      let clean = s3_in.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
+      if (clean.length % 2 !== 0) clean += 'X';
+      s3_out = decryptPlayfair(clean, kP);
+    }
+  } catch (err) {
+    console.warn('Super calculation:', err);
+  }
+
+  const layers = [
+    { num: '1', name: s1_name, algo: s1_algo, in: s1_in, out: s1_out, keyText: s1_keyText, keyVal: s1_keyVal },
+    { num: '2', name: s2_name, algo: s2_algo, in: s2_in, out: s2_out, keyText: s2_keyText, keyVal: s2_keyVal },
+    { num: '3', name: s3_name, algo: s3_algo, in: s3_in, out: s3_out, keyText: s3_keyText, keyVal: s3_keyVal }
+  ];
+
+  const trunc = (str, len = 14) => (!str ? '' : (str.length > len ? str.slice(0, len) + '…' : str));
+
+  let html = `
+    <div class="super-viz-container">
+      <!-- 1. Pipeline Flow Tracker (Diagram Alur 3 Lapis) -->
+      <div class="super-flow-tracker">
+        <div class="super-flow-step flow-input" data-stagetab="all" title="Klik untuk lihat semua">
+          <span class="flow-pill-tag">${mode === 'encrypt' ? 'INPUT' : 'CIPHER'}</span>
+          <strong class="flow-algo-name">Awal</strong>
+          <span class="flow-code" title="${text}">${trunc(text, 12)}</span>
+        </div>
+        <span class="flow-arrow">➔</span>
+        <div class="super-flow-step flow-lapis ${superActiveTab === '1' ? 'selected' : ''}" data-stagetab="1">
+          <span class="flow-pill-tag tag-purple">LAPIS 1</span>
+          <strong class="flow-algo-name">${mode === 'encrypt' ? 'Playfair' : 'Rail Fence'}</strong>
+          <span class="flow-code" title="${s1_out}">${trunc(s1_out, 12)}</span>
+        </div>
+        <span class="flow-arrow">➔</span>
+        <div class="super-flow-step flow-lapis ${superActiveTab === '2' ? 'selected' : ''}" data-stagetab="2">
+          <span class="flow-pill-tag tag-cyan">LAPIS 2</span>
+          <strong class="flow-algo-name">Columnar</strong>
+          <span class="flow-code" title="${s2_out}">${trunc(s2_out, 12)}</span>
+        </div>
+        <span class="flow-arrow">➔</span>
+        <div class="super-flow-step flow-lapis ${superActiveTab === '3' ? 'selected' : ''}" data-stagetab="3">
+          <span class="flow-pill-tag tag-pink">LAPIS 3</span>
+          <strong class="flow-algo-name">${mode === 'encrypt' ? 'Rail Fence' : 'Playfair'}</strong>
+          <span class="flow-code" title="${s3_out}">${trunc(s3_out, 12)}</span>
+        </div>
+      </div>
+
+      <!-- 2. Navigasi Pilihan Lapis -->
+      <div class="super-layer-nav">
+        <button type="button" class="super-nav-btn ${superActiveTab === 'all' ? 'active' : ''}" data-stagetab="all">
+          <svg class="ui-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Semua Lapis (1, 2, 3)
+        </button>
+        <button type="button" class="super-nav-btn ${superActiveTab === '1' ? 'active' : ''}" data-stagetab="1">
+          1. ${mode === 'encrypt' ? 'Playfair' : 'Rail Fence'}
+        </button>
+        <button type="button" class="super-nav-btn ${superActiveTab === '2' ? 'active' : ''}" data-stagetab="2">
+          2. Columnar
+        </button>
+        <button type="button" class="super-nav-btn ${superActiveTab === '3' ? 'active' : ''}" data-stagetab="3">
+          3. ${mode === 'encrypt' ? 'Rail Fence' : 'Playfair'}
+        </button>
+      </div>
+
+      <!-- 3. Wadah Kartu Lapis -->
+      <div class="super-layers-deck">
+  `;
+
+  const activeLayers = superActiveTab === 'all' ? layers : layers.filter(l => l.num === superActiveTab);
+
+  activeLayers.forEach((l, idx) => {
+    html += `
+      <div class="super-card-layer layer-theme-${l.algo}">
+        <div class="super-card-header">
+          <div class="super-card-title-group">
+            <span class="super-card-num num-${l.algo}">${l.num}</span>
+            <div>
+              <h4>${l.name}</h4>
+              <span class="super-card-key">${l.keyText}</span>
+            </div>
+          </div>
+          <div class="super-card-io">
+            <span class="io-badge">IN: <code title="${l.in}">${trunc(l.in, 16)}</code></span>
+            <span class="io-arrow">➔</span>
+            <span class="io-badge io-out">OUT: <code title="${l.out}">${trunc(l.out, 16)}</code></span>
+          </div>
+        </div>
+        <div class="super-card-body" id="superContent_${l.num}"></div>
+      </div>
+    `;
+
+    if (superActiveTab === 'all' && idx < activeLayers.length - 1) {
+      const nextNum = parseInt(l.num) + 1;
+      html += `
+        <div class="super-arrow-connector">
+          <svg class="ui-icon connector-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+          <span>Hasil Lapis ${l.num} ("${trunc(l.out, 14)}") diteruskan ke masukan Lapis ${nextNum}</span>
+        </div>
+      `;
+    }
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+  // Render sub-visualisasi masing-masing lapis
+  activeLayers.forEach(l => {
+    const subContainer = $(`superContent_${l.num}`);
+    if (subContainer) {
+      if (l.algo === 'playfair') {
+        renderPlayfairVisualization(subContainer, l.in, mode, l.keyVal);
+      } else if (l.algo === 'columnar') {
+        renderColumnarVisualization(subContainer, l.in, mode, false, l.keyVal);
+      } else if (l.algo === 'rail') {
+        renderRailVisualization(subContainer, l.in, mode, l.keyVal);
+      }
+    }
+  });
+
+  // Pasang listener pada tombol tab dan flow-tracker
+  container.querySelectorAll('[data-stagetab]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      superActiveTab = btn.dataset.stagetab;
+      renderSuperVisualization(container, text, mode);
+    });
+  });
+}
+
 // 1. Visualisasi Columnar Transposition (Sesuai Materi Kuliah Slide 31 & 32)
-function renderColumnarVisualization(container, text, mode) {
-  const key = Math.max(1, parseInt($('keyCol').value, 10) || 1);
+function renderColumnarVisualization(container, text, mode, isAutoDerived, overrideKey) {
+  const key = overrideKey !== undefined ? overrideKey : Math.max(1, parseInt($('keyCol').value, 10) || 1);
   // Sesuai materi kuliah Slide 31: teks diproses tanpa spasi
   const cleanText = (text || '').replace(/\s+/g, '');
   const chars = Array.from(cleanText);
@@ -211,8 +408,8 @@ function renderColumnarVisualization(container, text, mode) {
 }
 
 // 2. Visualisasi Rail Fence Cipher
-function renderRailVisualization(container, text, mode) {
-  const key = Math.max(1, parseInt($('keyRail').value, 10) || 1);
+function renderRailVisualization(container, text, mode, overrideKey) {
+  const key = overrideKey !== undefined ? overrideKey : Math.max(1, parseInt($('keyRail').value, 10) || 1);
   const chars = Array.from(text);
   const pattern = createRailFencePattern(chars.length, key);
   let html = '<div style="display:flex; flex-direction:column; gap:6px;">';
@@ -230,8 +427,8 @@ function renderRailVisualization(container, text, mode) {
 }
 
 // 3. Visualisasi Playfair Cipher
-function renderPlayfairVisualization(container, text, mode) {
-  const matrix = createMatrix($('keyPf').value || 'KRIPTOGRAFI');
+function renderPlayfairVisualization(container, text, mode, overrideKey) {
+  const matrix = createMatrix(overrideKey !== undefined ? overrideKey : ($('keyPf').value || 'KRIPTOGRAFI'));
   let html = `<div style="display:inline-grid; grid-template-columns:repeat(5, 38px); gap:6px;">` +
     matrix.flat().map(c => `<span class="rail-cell filled" style="background:var(--pastel-purple); color:var(--border-color);">${c}</span>`).join('') +
     `</div>`;

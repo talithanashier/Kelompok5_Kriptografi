@@ -1,14 +1,27 @@
+# Pengaturan Direktori Utama Hosting
+DirectoryIndex index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # 1. Izinkan akses langsung ke folder backend
-  RewriteCond %{REQUEST_URI} ^/backend/ [NC]
-  RewriteRule ^ - [L]
-
-  # 2. Tangani request backend jika dipanggil relatif dari frontend
-  RewriteRule ^frontend/backend/(.*)$ backend/$1 [L]
-
-  # 3. Arahkan semua request publik ke folder frontend secara transparan (URL tetap bersih tanpa tulisan /frontend/)
-  RewriteCond %{REQUEST_URI} !^/frontend/ [NC]
-  RewriteRule ^N(.*)$ frontend/$1 [L]
+  # Redirect kompatibilitas jika ada request lama yang memanggil folder frontend/
+  RewriteRule ^frontend/(.*)$ $1 [R=301,L]
 </IfModule>
+
+# Cegah browser menyimpan cache lama saat ada pembaruan kode
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# Cegah akses ke berkas sensitif tersembunyi
+<FilesMatch "^\.">
+  Order allow,deny
+  Deny from all
+</FilesMatch>

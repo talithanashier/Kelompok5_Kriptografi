@@ -693,6 +693,15 @@ textarea:focus, .key-field input:focus {
   background: var(--pastel-pink-dark);
 }
 
+.btn-decrypt {
+  background: var(--pastel-cyan);
+  color: var(--border-color);
+}
+
+.btn-decrypt:hover {
+  background: var(--pastel-cyan-dark);
+}
+
 .btn-outline {
   background: var(--pastel-yellow);
   color: var(--border-color);
@@ -846,6 +855,292 @@ textarea:focus, .key-field input:focus {
 @keyframes popCell {
   0% { transform: scale(0.6); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   Super Enkripsi 3-Layer Pipeline Visualizer
+   ========================================================= */
+.super-viz-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.super-flow-tracker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 18px;
+  box-shadow: var(--shadow-solid-sm);
+}
+
+.super-flow-step {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--bg-inner);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-width: 130px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 0 var(--border-color);
+}
+
+.super-flow-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 var(--border-color);
+}
+
+.super-flow-step.selected {
+  background: #ffffff;
+  box-shadow: 0 4px 0 var(--border-color), 0 0 0 2px var(--pastel-yellow);
+}
+
+.flow-input {
+  background: #ffffff;
+}
+
+.flow-lapis {
+  background: var(--bg-inner);
+}
+
+.flow-pill-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  align-self: flex-start;
+}
+
+.flow-pill-tag.tag-purple {
+  background: var(--pastel-purple);
+}
+
+.flow-pill-tag.tag-cyan {
+  background: var(--pastel-cyan);
+}
+
+.flow-pill-tag.tag-pink {
+  background: var(--pastel-pink);
+}
+
+.flow-algo-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.flow-code {
+  font-family: 'Fredoka', 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px dashed #dabeb2;
+  color: var(--border-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flow-arrow {
+  font-size: 16px;
+  font-weight: 800;
+  color: #b05c75;
+  flex-shrink: 0;
+}
+
+/* Layer Nav Tabs */
+.super-layer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.super-nav-btn {
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid var(--border-color);
+  background: #ffffff;
+  color: var(--text-main);
+  box-shadow: var(--shadow-solid-sm);
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.super-nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-solid);
+}
+
+.super-nav-btn.active {
+  background: var(--pastel-yellow);
+  color: var(--border-color);
+  box-shadow: var(--shadow-solid);
+}
+
+/* Layer Cards */
+.super-layers-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.super-card-layer {
+  background: #ffffff;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-solid);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.layer-theme-playfair {
+  border-left: 7px solid #bba0ec;
+}
+
+.layer-theme-columnar {
+  border-left: 7px solid #6eceea;
+}
+
+.layer-theme-rail {
+  border-left: 7px solid #f08ea4;
+}
+
+.super-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1.5px dashed #dabeb2;
+  padding-bottom: 10px;
+}
+
+.super-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.super-card-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: var(--pastel-yellow);
+  border: 2px solid var(--border-color);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--border-color);
+  box-shadow: 0 2px 0 var(--border-color);
+  flex-shrink: 0;
+}
+
+.super-card-num.num-playfair {
+  background: var(--pastel-purple);
+}
+
+.super-card-num.num-columnar {
+  background: var(--pastel-cyan);
+}
+
+.super-card-num.num-rail {
+  background: var(--pastel-pink);
+}
+
+.super-card-title-group h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.super-card-key {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.super-card-io {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.io-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.io-badge code {
+  font-family: 'Fredoka', 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  background: var(--bg-inner);
+  border: 1.5px solid var(--border-color);
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--border-color);
+  font-weight: 700;
+}
+
+.io-badge.io-out code {
+  background: var(--pastel-yellow-light);
+}
+
+.io-arrow {
+  color: #b05c75;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.super-card-body {
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.super-arrow-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 6px 0;
+}
+
+.connector-icon {
+  width: 18px;
+  height: 18px;
+  color: #b05c75;
+  stroke-width: 2.5;
 }
 
 /* =========================================================
