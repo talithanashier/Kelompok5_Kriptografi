@@ -723,13 +723,45 @@ textarea:focus, .key-field input:focus {
 }
 
 .viz-header {
-  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.viz-header h3 {
+.viz-title-wrap h3 {
   font-size: 16px;
   font-weight: 700;
   color: var(--text-main);
+}
+
+.viz-mini-pills {
+  display: inline-flex;
+  gap: 4px;
+  background: #ffffff;
+  padding: 3px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 0 2px 0 var(--border-color);
+}
+
+.viz-pill {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.viz-pill.active {
+  background: var(--pastel-pink);
+  color: var(--border-color);
 }
 
 .text-muted {
@@ -796,6 +828,19 @@ textarea:focus, .key-field input:focus {
   background: rgba(255, 255, 255, 0.6) !important;
   border: 1.5px dashed #dac2b6 !important;
   box-shadow: none !important;
+}
+
+.viz-caption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.viz-caption strong {
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
 }
 
 @keyframes popCell {

@@ -100,8 +100,14 @@
       <!-- Visualisasi Interaktif (Zig-Zag / Matrix / Columnar) -->
       <div class="viz-section">
         <div class="viz-header">
-          <h3>Visualisasi Interaktif</h3>
-          <small class="text-muted" id="vizDesc">Pratinjau input pada matriks 5×5.</small>
+          <div class="viz-title-wrap">
+            <h3>Visualisasi Interaktif</h3>
+            <small class="text-muted" id="vizDesc">Pratinjau penulisan baris dan pembacaan per kolom.</small>
+          </div>
+          <div class="viz-mini-pills">
+            <button type="button" class="viz-pill active" id="btnVizEnc" title="Tampilkan visualisasi Enkripsi">Enkripsi</button>
+            <button type="button" class="viz-pill" id="btnVizDec" title="Tampilkan visualisasi Dekripsi">Dekripsi</button>
+          </div>
         </div>
         <div class="viz-content" id="vizContent"></div>
       </div>

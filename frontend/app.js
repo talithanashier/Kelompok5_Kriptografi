@@ -102,44 +102,140 @@ function switchAlgorithm(algo) {
   renderInteractiveVisualization();
 }
 
+// Mode Visualisasi Interaktif ('encrypt' atau 'decrypt')
+let vizMode = 'encrypt';
+
+function setVizMode(mode) {
+  vizMode = mode;
+  if ($('btnVizEnc')) $('btnVizEnc').classList.toggle('active', mode === 'encrypt');
+  if ($('btnVizDec')) $('btnVizDec').classList.toggle('active', mode === 'decrypt');
+  renderInteractiveVisualization();
+}
+
+if ($('btnVizEnc')) $('btnVizEnc').addEventListener('click', () => setVizMode('encrypt'));
+if ($('btnVizDec')) $('btnVizDec').addEventListener('click', () => setVizMode('decrypt'));
+
 // Render Visualisasi Interaktif
 function renderInteractiveVisualization() {
-  const text = $('inputText').value || '';
   const container = $('vizContent');
-  if (!text) return container.innerHTML = '<span class="text-muted">Ketik teks di atas untuk melihat visualisasi.</span>';
+  if (!container) return;
+
+  const inText = $('inputText').value || '';
+  const outText = $('outputText').value || '';
+
+  // Tentukan teks sumber sesuai mode aktif
+  let sourceText = inText;
+  let isAutoDerived = false;
+
+  if (vizMode === 'decrypt') {
+    if (outText.trim() && (outText.trim() === lastEncryptedCipher || !inText.trim())) {
+      sourceText = outText.trim();
+    } else if (inText.trim()) {
+      if (lastEncryptedCipher && inText.trim() === lastOriginalPlain) {
+        sourceText = lastEncryptedCipher;
+        isAutoDerived = true;
+      } else {
+        sourceText = inText.trim();
+      }
+    } else if (outText.trim()) {
+      sourceText = outText.trim();
+    }
+  }
+
+  if (!sourceText) {
+    return container.innerHTML = '<span class="text-muted">Ketik teks di atas untuk melihat visualisasi.</span>';
+  }
 
   if (activeAlgo === 'rail' || activeAlgo === 'super') {
-    const key = Math.max(1, parseInt($('keyRail').value, 10) || 1);
-    const chars = Array.from(text);
-    const pattern = createRailFencePattern(chars.length, key);
-    let html = '';
-    for (let r = 0; r < key; r++) {
-      html += `<div class="rail-row"><span class="rail-label">R${r + 1}</span>` +
-        chars.map((c, i) => pattern[i] === r 
-          ? `<span class="rail-cell filled" title="Karakter '${c}' di Rel ${r + 1}">${c === ' ' ? '·' : c}</span>`
-          : `<span class="rail-cell empty"></span>`
-        ).join('') + '</div>';
-    }
-    container.innerHTML = html;
+    renderRailVisualization(container, sourceText, vizMode);
   } else if (activeAlgo === 'columnar') {
-    const key = Math.max(1, parseInt($('keyCol').value, 10) || 1);
-    const chars = Array.from(text);
-    let html = '<div style="display:flex; flex-direction:column; gap:6px;">';
+    renderColumnarVisualization(container, sourceText, vizMode, isAutoDerived);
+  } else if (activeAlgo === 'playfair') {
+    renderPlayfairVisualization(container, sourceText, vizMode);
+  }
+}
+
+// 1. Visualisasi Columnar Transposition (Sesuai Materi Kuliah Slide 31 & 32)
+function renderColumnarVisualization(container, text, mode) {
+  const key = Math.max(1, parseInt($('keyCol').value, 10) || 1);
+  // Sesuai materi kuliah Slide 31: teks diproses tanpa spasi
+  const cleanText = (text || '').replace(/\s+/g, '');
+  const chars = Array.from(cleanText);
+  const N = chars.length;
+  if (!N) return container.innerHTML = '<span class="text-muted">Ketik teks di atas untuk melihat visualisasi.</span>';
+
+  let html = '<div style="display:flex; flex-direction:column; gap:6px;">';
+
+  if (mode === 'encrypt') {
+    // Sesuai Slide 31: Teks disusun mendatar per baris selebar kunci k
     for (let i = 0; i < chars.length; i += key) {
       html += '<div style="display:flex; gap:6px;">';
       for (let c = 0; c < key; c++) {
         const ch = chars[i + c];
-        html += `<span class="rail-cell ${ch !== undefined ? 'filled' : 'empty'}" style="${ch !== undefined ? 'background:var(--pastel-cyan); color:var(--border-color);' : ''}">${ch === ' ' ? '·' : (ch || '')}</span>`;
+        const isFilled = ch !== undefined;
+        html += `<span class="rail-cell ${isFilled ? 'filled' : 'empty'}">${ch || ''}</span>`;
       }
       html += '</div>';
     }
-    container.innerHTML = html + '</div>';
-  } else if (activeAlgo === 'playfair') {
-    const matrix = createMatrix($('keyPf').value || 'KRIPTOGRAFI');
-    container.innerHTML = `<div style="display:inline-grid; grid-template-columns:repeat(5, 38px); gap:6px;">` +
-      matrix.flat().map(c => `<span class="rail-cell filled" style="background:var(--pastel-purple); color:var(--border-color);">${c}</span>`).join('') +
-      `</div>`;
+    html += '</div>';
+  } else {
+    // Sesuai Slide 32: Bagi panjang cipherteks dengan kunci
+    // Teks cipherteks disusun ke baris selebar hasil bagi (panjang kolom enkripsi)
+    const quotient = Math.floor(N / key);
+    const remainder = N % key;
+    const colLengths = [];
+    for (let c = 0; c < key; c++) {
+      colLengths.push(quotient + (c < remainder ? 1 : 0));
+    }
+    const maxCols = Math.max(...colLengths);
+
+    // Potong cipherteks dan susun per baris (Slide 32)
+    let cur = 0;
+    for (let r = 0; r < key; r++) {
+      const rowLen = colLengths[r];
+      const rowChars = chars.slice(cur, cur + rowLen);
+      cur += rowLen;
+
+      html += '<div style="display:flex; gap:6px;">';
+      for (let c = 0; c < maxCols; c++) {
+        const ch = rowChars[c];
+        const isFilled = ch !== undefined;
+        html += `<span class="rail-cell ${isFilled ? 'filled' : 'empty'}">${ch || ''}</span>`;
+      }
+      html += '</div>';
+    }
+    html += '</div>';
   }
+
+  container.innerHTML = html;
+}
+
+// 2. Visualisasi Rail Fence Cipher
+function renderRailVisualization(container, text, mode) {
+  const key = Math.max(1, parseInt($('keyRail').value, 10) || 1);
+  const chars = Array.from(text);
+  const pattern = createRailFencePattern(chars.length, key);
+  let html = '<div style="display:flex; flex-direction:column; gap:6px;">';
+  
+  for (let r = 0; r < key; r++) {
+    html += `<div class="rail-row"><span class="rail-label">R${r + 1}</span>` +
+      chars.map((c, i) => pattern[i] === r 
+        ? `<span class="rail-cell filled" title="${c === ' ' ? 'Spasi' : c}">${c === ' ' ? '␣' : c}</span>`
+        : `<span class="rail-cell empty"></span>`
+      ).join('') + '</div>';
+  }
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// 3. Visualisasi Playfair Cipher
+function renderPlayfairVisualization(container, text, mode) {
+  const matrix = createMatrix($('keyPf').value || 'KRIPTOGRAFI');
+  let html = `<div style="display:inline-grid; grid-template-columns:repeat(5, 38px); gap:6px;">` +
+    matrix.flat().map(c => `<span class="rail-cell filled" style="background:var(--pastel-purple); color:var(--border-color);">${c}</span>`).join('') +
+    `</div>`;
+  container.innerHTML = html;
 }
 
 let lastEncryptedCipher = '';
@@ -161,10 +257,12 @@ $('btnEncrypt').addEventListener('click', () => {
   const kC = parseInt($('keyCol').value, 10) || 1;
   const kP = $('keyPf').value.trim() || 'K';
 
+  setVizMode('encrypt');
+
   let res = text;
   try {
     if (activeAlgo === 'rail') res = encryptRailFence(res, kR);
-    else if (activeAlgo === 'columnar') res = encryptColumnarTransposition(res, kC);
+    else if (activeAlgo === 'columnar') res = encryptColumnarTransposition(res.replace(/\s+/g, ''), kC);
     else if (activeAlgo === 'playfair') res = encryptPlayfair(res, kP);
     else if (activeAlgo === 'super') res = encryptRailFence(encryptColumnarTransposition(encryptPlayfair(res, kP), kC), kR);
 
@@ -210,12 +308,14 @@ function performDecryption() {
   const kC = parseInt($('keyCol').value, 10) || 1;
   const kP = $('keyPf').value.trim() || 'K';
 
+  setVizMode('decrypt');
+
   let res = cipher;
   try {
     if (activeAlgo === 'rail') {
       res = decryptRailFence(res, kR);
     } else if (activeAlgo === 'columnar') {
-      res = decryptColumnarTransposition(res, kC);
+      res = decryptColumnarTransposition(res.replace(/\s+/g, ''), kC);
     } else if (activeAlgo === 'playfair') {
       let clean = res.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
       if (clean.length % 2 !== 0) clean += 'X';
@@ -235,8 +335,10 @@ function performDecryption() {
       let refText = isQuickTesting ? $('inputText').value : (lastOriginalPlain || $('inputText').value);
       if (activeAlgo === 'playfair' || activeAlgo === 'super') {
         refText = refText.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
+      } else if (activeAlgo === 'columnar') {
+        refText = refText.replace(/\s+/g, '');
       }
-      const isMatch = (res === refText || res === $('inputText').value) && refText.length > 0;
+      const isMatch = (res === refText || res === $('inputText').value || res.replace(/\s+/g, '') === refText.replace(/\s+/g, '')) && refText.length > 0;
 
       if (isQuickTesting || (outputVal === lastEncryptedCipher && lastOriginalPlain)) {
         $('valBox').className = `val-box ${isMatch ? 'val-ok' : 'val-fail'}`;
