@@ -410,14 +410,34 @@ function renderColumnarVisualization(container, text, mode, isAutoDerived, overr
 // 2. Visualisasi Rail Fence Cipher
 function renderRailVisualization(container, text, mode, overrideKey) {
   const key = overrideKey !== undefined ? overrideKey : Math.max(1, parseInt($('keyRail').value, 10) || 1);
-  const chars = Array.from(text);
+  // Sesuai kaidah: spasi diabaikan/dihapus otomatis
+  const cleanText = (text || '').replace(/\s+/g, '');
+  const chars = Array.from(cleanText);
+  if (!chars.length) {
+    container.innerHTML = '<span class="text-muted">Ketik teks di atas untuk melihat visualisasi.</span>';
+    return;
+  }
   const pattern = createRailFencePattern(chars.length, key);
+
+  let displayChars = chars;
+  if (mode === 'decrypt') {
+    const counts = new Array(key).fill(0);
+    pattern.forEach(rail => counts[rail]++);
+    const rails = [];
+    let cursor = 0;
+    for (let rail = 0; rail < key; rail++) {
+      rails.push(chars.slice(cursor, cursor + counts[rail]));
+      cursor += counts[rail];
+    }
+    const next = new Array(key).fill(0);
+    displayChars = pattern.map(rail => rails[rail][next[rail]++]);
+  }
+
   let html = '<div style="display:flex; flex-direction:column; gap:6px;">';
-  
   for (let r = 0; r < key; r++) {
     html += `<div class="rail-row"><span class="rail-label">R${r + 1}</span>` +
-      chars.map((c, i) => pattern[i] === r 
-        ? `<span class="rail-cell filled" title="${c === ' ' ? 'Spasi' : c}">${c === ' ' ? '␣' : c}</span>`
+      displayChars.map((c, i) => pattern[i] === r 
+        ? `<span class="rail-cell filled" title="${c}">${c}</span>`
         : `<span class="rail-cell empty"></span>`
       ).join('') + '</div>';
   }
@@ -532,7 +552,7 @@ function performDecryption() {
       let refText = isQuickTesting ? $('inputText').value : (lastOriginalPlain || $('inputText').value);
       if (activeAlgo === 'playfair' || activeAlgo === 'super') {
         refText = refText.toUpperCase().replace(/\s+/g, '').replace(/J/g, 'I');
-      } else if (activeAlgo === 'columnar') {
+      } else if (activeAlgo === 'columnar' || activeAlgo === 'rail') {
         refText = refText.replace(/\s+/g, '');
       }
       const isMatch = (res === refText || res === $('inputText').value || res.replace(/\s+/g, '') === refText.replace(/\s+/g, '')) && refText.length > 0;

@@ -23,8 +23,11 @@ function createRailFencePattern(length, key) {
 function encryptRailFence(text, key) {
   validateRailFenceInput(text, key);
 
+  // Sesuai kaidah kriptografi klasik: spasi diabaikan/dihapus otomatis
+  const cleanText = text.replace(/\s+/g, '');
   // Array.from memecah per karakter unicode (jika pakai .split('') bisa merusak emoji)
-  const chars = Array.from(text);
+  const chars = Array.from(cleanText);
+  if (chars.length === 0) return '';
   const pattern = createRailFencePattern(chars.length, key);
 
   // Satu array penampung per rel
@@ -40,7 +43,10 @@ function encryptRailFence(text, key) {
 function decryptRailFence(ciphertext, key) {
   validateRailFenceInput(ciphertext, key);
 
-  const chars = Array.from(ciphertext);
+  // Sesuai kaidah kriptografi klasik: spasi diabaikan/dihapus otomatis
+  const cleanCipher = ciphertext.replace(/\s+/g, '');
+  const chars = Array.from(cleanCipher);
+  if (chars.length === 0) return '';
   const pattern = createRailFencePattern(chars.length, key);
 
   // Langkah 1: hitung berapa karakter yang jatuh di tiap rel.
