@@ -1,4 +1,4 @@
-﻿# IMPLEMENTASI ALGORITMA KRIPTOGRAFI KLASIK BERBASIS WEBSITE
+# IMPLEMENTASI ALGORITMA KRIPTOGRAFI KLASIK BERBASIS WEBSITE
 
 **Disusun oleh (Kelompok 5):**
 - Salma Faizatul Jannah (H1D024066)
@@ -66,10 +66,10 @@ Aplikasi menyediakan beberapa fitur utama untuk mendukung proses enkripsi dan de
 
 ### B. Rail Fence Cipher (Zig-Zag)
 * **Deskripsi**:
-  Rail Fence Cipher merupakan algoritma kriptografi klasik yang termasuk dalam kategori transposisi. Algoritma ini tidak mengubah karakter plainteks, melainkan mengubah posisi urutan karakter dengan menyusunnya dalam pola lintasan rel zig-zag (turun-naik) berdasarkan jumlah *rail* yang ditentukan oleh kunci.
+  Rail Fence Cipher merupakan algoritma kriptografi klasik yang termasuk dalam kategori transposisi. Algoritma ini tidak mengubah karakter plainteks, melainkan mengubah posisi urutan karakter dengan menyusunnya dalam pola lintasan rel zig-zag (turun-naik) berdasarkan jumlah *rail* yang ditentukan oleh kunci. Sesuai kaidah kriptografi klasik pada materi perkuliahan, teks diproses murni tanpa spasi (spasi diabaikan).
 * **Cara Kerja**:
   1. Pengguna menentukan jumlah *rail* sebagai *key* (bilangan bulat positif).
-  2. Karakter plainteks ditulis secara zig-zag dari rel paling atas ke rel paling bawah, kemudian memantul kembali ke atas secara periodik.
+  2. Karakter plainteks (tanpa spasi) ditulis secara zig-zag dari rel paling atas ke rel paling bawah, kemudian memantul kembali ke atas secara periodik.
   3. Pada proses **enkripsi**, setelah seluruh karakter ditempatkan, teks dibaca baris demi baris dari rel pertama hingga terakhir untuk menghasilkan cipherteks.
   4. Pada proses **dekripsi**, panjang potongan cipherteks untuk setiap rel dihitung terlebih dahulu, kemudian karakter dialokasikan kembali ke dalam pola rel zig-zag untuk dibaca mengikuti urutan aslinya dari kiri ke kanan.
 
